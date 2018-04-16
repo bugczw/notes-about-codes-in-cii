@@ -5,7 +5,8 @@ static char rcsid[] = "$Id$";
 //缺点是会形成很多大小等于align的内存节点，不能用于再分配，没有回收机制会造成浪费。
 //在频繁申请释放的极端情况下，会消耗大量的内存，系统内存吃紧，而freelist上缺存在大量的align大小的内存空间节点不能回收使用；
 //在习题5.5中指出实现一种合并相邻空闲块机制，能够回收这样的内存资源。
-//分配函数不返回同一地址两次？？？？？通过不释放任何内存块来实现
+//分配函数不返回同一地址两次，通过不释放任何内存块来实现：
+//memchk的那个实现，做了有个“优化”（也就多做了一次检查）。这个检查是：每次传给MemFree的指针，一定只能是之前alloc产生的。
 #include <stdlib.h>
 #include <string.h>
 #include "assert.h"
@@ -60,7 +61,12 @@ static struct descriptor {
 
 static struct descriptor freelist = { &freelist };
 //freelist空闲内存节点链表，静态变量，所有未占用的空闲内存单元都挂载此环形链表中，
-//初始化后freelist->free的值为自身的地址，其他值为NULL或者0？？？？？？？？
+//初始化后freelist->free的值为自身的地址，其他值为NULL或者0原因
+//C语言的标准： http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf
+//6.7.8的第21条：struct如果没有写完整初始化的话，后面的当成static storage初始化
+//第10条规定了static storage的初始化：
+//1指针初始化为NULL  2数初始化为0，  3如果是union，第一个元素正常初始化，其它置为0或者NULL
+
 static struct descriptor *find(const void *ptr) {
 	struct descriptor *bp = htab[hash(ptr, htab)];
 	while (bp && bp->ptr != ptr)
