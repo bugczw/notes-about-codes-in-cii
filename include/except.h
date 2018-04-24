@@ -68,7 +68,7 @@ extern const Except_T Assert_Failed;
 // 错误捕获函数，包含longjmp的调用，程序执行过程中出现异常，需要调用此函数来触发异常
 void Except_raise(const T *e, const char *file,int line);
 
-//？？？平台？？？
+//考虑到了WIN32平台
 #ifdef WIN32
 #include <windows.h>
 
@@ -79,7 +79,7 @@ extern void Except_pop(void);
 #endif
 #ifdef WIN32
 /* $Id$ */
-//？？？ 实现函数里面其他变量如何赋值？？？
+//实现函数里面地址，如文件坐标（行列数）直接通过参数传入
 // 捕获异常的封装宏定义，加入了__FILE__和__LINE__，allocate中可以使用此函数替代
 #define RAISE(e) Except_raise(&(e), __FILE__, __LINE__)
 
